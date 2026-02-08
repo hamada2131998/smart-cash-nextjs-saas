@@ -14,7 +14,7 @@ export default function NewExpensePage() {
   const [uploading, setUploading] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [amount, setAmount] = useState('');
-  const [categories, setCategories] = useState<any[]>([]);
+  const [defaultCategoryId, setDefaultCategoryId] = useState('');
   const [custodies, setCustodies] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [costCenters, setCostCenters] = useState<any[]>([]);
@@ -23,7 +23,6 @@ export default function NewExpensePage() {
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
-    category_id: '',
     custody_id: '',
     project_id: '',
     cost_center_id: '',
@@ -57,6 +56,7 @@ export default function NewExpensePage() {
         .eq('id', profile.company_id)
         .single();
 
+      let activityCode = '';
       if (company) {
         const { data: activityType } = await supabase
           .from('activity_types')
@@ -65,6 +65,7 @@ export default function NewExpensePage() {
           .single();
 
         if (activityType) {
+          activityCode = activityType.code;
           setCompanyActivityType(activityType.code);
         }
       }
@@ -76,7 +77,12 @@ export default function NewExpensePage() {
         .eq('is_active', true)
         .order('name');
 
-      if (categoriesData) setCategories(categoriesData);
+      if (categoriesData && categoriesData.length > 0) {
+        const preferredCategory = categoriesData.find((category) => category.name === 'مصروفات عامة');
+        setDefaultCategoryId(preferredCategory?.id ?? categoriesData[0].id);
+      } else {
+        setDefaultCategoryId('');
+      }
 
       // Load custodies
       const { data: custodiesData } = await supabase
@@ -88,7 +94,7 @@ export default function NewExpensePage() {
       if (custodiesData) setCustodies(custodiesData);
 
       // Load projects if contracting
-      if (companyActivityType === 'contracting') {
+      if (activityCode === 'contracting') {
         const { data: projectsData } = await supabase
           .from('projects')
           .select('*')
@@ -136,7 +142,9 @@ export default function NewExpensePage() {
         .eq('id', user.id)
         .single();
 
-      if (!profile) return null;      const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      if (!profile) return null;
+
+      const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
       const filePath = `${profile.company_id}/${expenseId}/${fileName}`;
 
       const { data, error } = await supabase.storage
@@ -171,6 +179,12 @@ export default function NewExpensePage() {
 
       if (!profile) throw new Error('Profile not found');
 
+      if (!defaultCategoryId) {
+        toast.error('لا توجد فئات مصروفات — راجع إعدادات الشركة');
+        setLoading(false);
+        return;
+      }
+
       // Validate
       if (companyActivityType === 'contracting') {
         if (!formData.project_id || !formData.cost_center_id) {
@@ -186,7 +200,7 @@ export default function NewExpensePage() {
         .insert({
           company_id: profile.company_id,
           created_by: user.id,
-          category_id: formData.category_id,
+          category_id: defaultCategoryId,
           custody_id: formData.custody_id || null,
           project_id: formData.project_id || null,
           cost_center_id: formData.cost_center_id || null,
@@ -302,22 +316,6 @@ export default function NewExpensePage() {
               className="input"
               required
             />
-          </div>
-
-          <div>
-            <label className="label">التصنيف *</label>
-            <select
-              name="category_id"
-              value={formData.category_id}
-              onChange={handleInputChange}
-              className="input"
-              required
-            >
-              <option value="">اختر التصنيف</option>
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
           </div>
 
           <div>

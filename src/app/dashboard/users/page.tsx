@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { Edit, Plus, Search, UserCheck, UserX } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { createClient } from '@/lib/supabase';
 import { getRoleLabel } from '@/lib/auth-utils';
 import { UserRole } from '@/types/database.types';
@@ -33,6 +33,9 @@ export default function UsersPage() {
   const [editing, setEditing] = useState<UserRow | null>(null);
   const [editRole, setEditRole] = useState<UserRole>('employee');
   const [savingRole, setSavingRole] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<UserRole>('employee');
 
   const loadUsers = async () => {
     setLoading(true);
@@ -117,6 +120,19 @@ export default function UsersPage() {
 
   if (loading) return <div className="p-6">جاري التحميل...</div>;
 
+  const submitInvite = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail.trim()) {
+      toast.error('يرجى إدخال البريد الإلكتروني');
+      return;
+    }
+
+    toast('سيتم تفعيل الدعوات قريبًا', { icon: 'ℹ️' });
+    setShowInviteModal(false);
+    setInviteEmail('');
+    setInviteRole('employee');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -124,10 +140,10 @@ export default function UsersPage() {
           <h1 className="text-2xl font-bold text-gray-900">المستخدمون</h1>
           <p className="text-gray-500 mt-1">إدارة مستخدمي الشركة وصلاحياتهم</p>
         </div>
-        <Link href="/dashboard/users/new" className="btn btn-primary">
+        <button type="button" onClick={() => setShowInviteModal(true)} className="btn btn-primary">
           <Plus className="w-5 h-5" />
           إضافة مستخدم جديد
-        </Link>
+        </button>
       </div>
 
       <div className="card p-4">
@@ -280,6 +296,55 @@ export default function UsersPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showInviteModal && (
+        <div className="modal-overlay" onClick={() => setShowInviteModal(false)}>
+          <div className="modal p-6" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold mb-4">دعوة مستخدم جديد</h2>
+            <form className="space-y-3" onSubmit={submitInvite}>
+              <div>
+                <label className="label">البريد الإلكتروني *</label>
+                <input
+                  type="email"
+                  className="input"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="name@company.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="label">الدور</label>
+                <select
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value as UserRole)}
+                  className="input"
+                >
+                  {roleOptions.map((role) => (
+                    <option key={role} value={role}>
+                      {getRoleLabel(role)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                سيتم تفعيل الدعوات قريبًا.
+              </p>
+
+              <div className="flex gap-2 justify-end pt-2">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowInviteModal(false)}>
+                  إلغاء
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  إرسال دعوة
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
