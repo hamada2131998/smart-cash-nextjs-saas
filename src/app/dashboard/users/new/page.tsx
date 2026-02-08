@@ -12,15 +12,43 @@ const roleOptions: UserRole[] = ['owner', 'admin', 'accountant', 'employee', 'ma
 export default function NewUserInvitePage() {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<UserRole>('employee');
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
       toast.error('يرجى إدخال البريد الإلكتروني');
       return;
     }
 
-    toast('سيتم تفعيل الدعوات قريبًا', { icon: 'ℹ️' });
+    setLoading(true);
+    try {
+      const response = await fetch('/api/users/invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, role }),
+      });
+
+      const result = (await response.json()) as { ok?: boolean; error?: string };
+      if (!response.ok || !result.ok) {
+        if (result.error === 'Already invited/exists') {
+          toast(result.error, { icon: 'ℹ️' });
+        } else {
+          toast.error(result.error || 'فشل إرسال الدعوة');
+        }
+        return;
+      }
+
+      toast.success('تم إرسال الدعوة بنجاح');
+      setEmail('');
+      setRole('employee');
+    } catch {
+      toast.error('تعذر الاتصال بالخادم');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,12 +85,8 @@ export default function NewUserInvitePage() {
           </select>
         </div>
 
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-          سيتم تفعيل الدعوات قريبًا.
-        </div>
-
-        <button type="submit" className="btn btn-primary w-full">
-          إرسال الدعوة
+        <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+          {loading ? 'جاري الإرسال...' : 'إرسال الدعوة'}
         </button>
       </form>
     </div>

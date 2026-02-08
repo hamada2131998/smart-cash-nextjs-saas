@@ -36,6 +36,7 @@ export default function UsersPage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<UserRole>('employee');
+  const [inviting, setInviting] = useState(false);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -120,17 +121,47 @@ export default function UsersPage() {
 
   if (loading) return <div className="p-6">جاري التحميل...</div>;
 
-  const submitInvite = (e: React.FormEvent) => {
+  const submitInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail.trim()) {
       toast.error('يرجى إدخال البريد الإلكتروني');
       return;
     }
 
-    toast('سيتم تفعيل الدعوات قريبًا', { icon: 'ℹ️' });
-    setShowInviteModal(false);
-    setInviteEmail('');
-    setInviteRole('employee');
+    setInviting(true);
+    try {
+      const response = await fetch('/api/users/invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: inviteEmail,
+          role: inviteRole,
+        }),
+      });
+
+      const result = (await response.json()) as { ok?: boolean; error?: string };
+
+      if (!response.ok || !result.ok) {
+        if (result.error === 'Already invited/exists') {
+          toast(result.error, { icon: 'ℹ️' });
+        } else {
+          toast.error(result.error || 'فشل إرسال الدعوة');
+        }
+        return;
+      }
+
+      toast.success('تم إرسال الدعوة بنجاح');
+      setShowInviteModal(false);
+      setInviteEmail('');
+      setInviteRole('employee');
+      await loadUsers();
+    } catch {
+      toast.error('تعذر الاتصال بالخادم');
+    } finally {
+      setInviting(false);
+    }
   };
 
   return (
@@ -332,16 +363,12 @@ export default function UsersPage() {
                 </select>
               </div>
 
-              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
-                سيتم تفعيل الدعوات قريبًا.
-              </p>
-
               <div className="flex gap-2 justify-end pt-2">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowInviteModal(false)}>
                   إلغاء
                 </button>
-                <button type="submit" className="btn btn-primary">
-                  إرسال دعوة
+                <button type="submit" className="btn btn-primary" disabled={inviting}>
+                  {inviting ? 'جاري الإرسال...' : 'إرسال دعوة'}
                 </button>
               </div>
             </form>
