@@ -21,7 +21,7 @@ type UserRow = {
   } | null;
 };
 
-const roleOptions: UserRole[] = ['owner', 'admin', 'accountant', 'employee', 'manager', 'finance_manager'];
+const roleOptions: UserRole[] = ['owner', 'admin', 'accountant', 'employee', 'manager', 'finance_manager', 'sales_rep'];
 
 export default function UsersPage() {
   const supabase = createClient();
@@ -114,6 +114,7 @@ export default function UsersPage() {
       employee: 'badge-gray',
       manager: 'badge-warning',
       finance_manager: 'badge-primary',
+      sales_rep: 'badge-success',
     };
 
     return colors[role] || 'badge-gray';

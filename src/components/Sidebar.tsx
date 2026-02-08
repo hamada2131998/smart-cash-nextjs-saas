@@ -11,6 +11,7 @@ import {
   FileText,
   Shield,
   Users,
+  Contact,
   Settings,
   ChevronRight,
   LogOut,
@@ -24,6 +25,7 @@ const navigation = [
   { name: 'العهد', href: '/dashboard/custodies', icon: DollarSign },
   { name: 'السياسات', href: '/dashboard/policies', icon: Shield },
   { name: 'المستخدمون', href: '/dashboard/users', icon: Users },
+  { name: 'العملاء', href: '/dashboard/customers', icon: Contact },
   { name: 'الإعدادات', href: '/dashboard/settings', icon: Settings },
 ];
 

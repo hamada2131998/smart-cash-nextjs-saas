@@ -7,6 +7,7 @@ export const rolePermissions: Record<UserRole, string[]> = {
   employee: ['view_own', 'create_expense', 'submit_expense', 'view_own_custody'],
   manager: ['view_all', 'approve', 'manage_expenses', 'view_reports'],
   finance_manager: ['view_all', 'approve', 'reject', 'manage_expenses', 'manage_custodies', 'view_reports'],
+  sales_rep: ['view_own', 'create_expense', 'submit_expense', 'view_own_custody', 'collect_customer_payment'],
 };
 
 export function hasPermission(role: UserRole, permission: string): boolean {
@@ -37,6 +38,7 @@ export function getRoleLabel(role: UserRole): string {
     employee: 'Employee',
     manager: 'Manager',
     finance_manager: 'Finance Manager',
+    sales_rep: 'Sales Rep',
   };
   return labels[role] || role;
 }

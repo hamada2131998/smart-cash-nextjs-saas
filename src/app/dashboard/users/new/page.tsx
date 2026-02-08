@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { getRoleLabel } from '@/lib/auth-utils';
 import { UserRole } from '@/types/database.types';
 
-const roleOptions: UserRole[] = ['owner', 'admin', 'accountant', 'employee', 'manager', 'finance_manager'];
+const roleOptions: UserRole[] = ['owner', 'admin', 'accountant', 'employee', 'manager', 'finance_manager', 'sales_rep'];
 
 export default function NewUserInvitePage() {
   const [email, setEmail] = useState('');

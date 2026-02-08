@@ -6,7 +6,7 @@ import { UserRole } from '@/types/database.types';
 
 const inviteSchema = z.object({
   email: z.string().email(),
-  role: z.enum(['owner', 'admin', 'accountant', 'employee', 'manager', 'finance_manager']),
+  role: z.enum(['owner', 'admin', 'accountant', 'employee', 'manager', 'finance_manager', 'sales_rep']),
 });
 
 const ALLOWED_INVITER_ROLES = new Set<UserRole>(['owner', 'admin', 'manager']);

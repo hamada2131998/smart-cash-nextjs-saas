@@ -19,6 +19,8 @@ export default function NewExpensePage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [costCenters, setCostCenters] = useState<any[]>([]);
   const [companyActivityType, setCompanyActivityType] = useState('');
+  const [currentRole, setCurrentRole] = useState<string>('');
+  const [myCustodyBalance, setMyCustodyBalance] = useState(0);
 
   const [formData, setFormData] = useState({
     description: '',
@@ -49,6 +51,33 @@ export default function NewExpensePage() {
         .single();
 
       if (!profile) return;
+
+      const { data: roleRow } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('company_id', profile.company_id)
+        .single();
+
+      if (roleRow?.role) {
+        setCurrentRole(roleRow.role);
+      }
+
+      const { data: myCustody } = await supabase
+        .from('custodies')
+        .select('id')
+        .eq('company_id', profile.company_id)
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+
+      if (myCustody?.id) {
+        const { data: balanceData } = await supabase.rpc('custody_current_balance', {
+          p_custody_id: myCustody.id,
+        });
+        setMyCustodyBalance(Number(balanceData ?? 0));
+      }
 
       const { data: company } = await supabase
         .from('companies')
@@ -179,6 +208,12 @@ export default function NewExpensePage() {
 
       if (!profile) throw new Error('Profile not found');
 
+      if (myCustodyBalance <= 0) {
+        toast.error('Insufficient balance');
+        setLoading(false);
+        return;
+      }
+
       if (!defaultCategoryId) {
         toast.error('لا توجد فئات مصروفات — راجع إعدادات الشركة');
         setLoading(false);
@@ -274,6 +309,19 @@ export default function NewExpensePage() {
       </div>
 
       <form onSubmit={handleSubmit} className="card space-y-6">
+        {myCustodyBalance <= 0 && (
+          <div className="mx-6 mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
+            <div className="font-medium">رصيد العهدة الحالي صفر</div>
+            <div className="text-sm mt-1">لا يمكن إضافة مصروف قبل تغذية العهدة.</div>
+            <div className="flex gap-2 mt-3">
+              <Link href="/dashboard/custodies" className="btn btn-secondary">طلب تغذية عهدة</Link>
+              {currentRole === 'sales_rep' && (
+                <Link href="/dashboard/customers" className="btn btn-primary">تحصيل من عميل</Link>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="grid md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
             <label className="label">وصف المصروف *</label>
@@ -457,7 +505,7 @@ export default function NewExpensePage() {
           </Link>
           <button
             type="submit"
-            disabled={loading || uploading}
+            disabled={loading || uploading || myCustodyBalance <= 0}
             className="btn btn-primary flex-1"
           >
             {uploading ? 'جاري رفع الملفات...' : loading ? 'جاري الحفظ...' : 'حفظ المصروف'}

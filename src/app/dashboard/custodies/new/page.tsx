@@ -76,20 +76,48 @@ export default function NewCustodyPage() {
       }
 
       // Create custody
-      const { error } = await supabase
+      const { data: createdCustody, error } = await supabase
         .from('custodies')
         .insert({
           company_id: profile.company_id,
           user_id: formData.user_id,
           initial_amount: parseFloat(formData.initial_amount) || 0,
-          current_balance: parseFloat(formData.initial_amount) || 0,
+          current_balance: 0,
           currency: formData.currency,
           notes: formData.notes,
           status: 'active',
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) {
         throw error;
+      }
+
+      if (!createdCustody?.id) {
+        throw new Error('Failed to create custody record');
+      }
+
+      const amount = parseFloat(formData.initial_amount) || 0;
+      if (amount > 0) {
+        const { error: txError } = await supabase.from('custody_transactions').insert({
+          company_id: profile.company_id,
+          custody_id: createdCustody.id,
+          tx_type: 'topup',
+          source: 'manual_admin',
+          status: 'approved',
+          amount,
+          from_user_id: user.id,
+          to_user_id: formData.user_id,
+          notes: 'Initial custody funding',
+          created_by: user.id,
+          decided_by: user.id,
+          decided_at: new Date().toISOString(),
+        });
+
+        if (txError) {
+          throw txError;
+        }
       }
 
       toast.success('تم إنشاء العهد بنجاح!');

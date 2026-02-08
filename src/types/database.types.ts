@@ -6,7 +6,14 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type UserRole = 'owner' | 'admin' | 'accountant' | 'employee' | 'manager' | 'finance_manager';
+export type UserRole =
+  | 'owner'
+  | 'admin'
+  | 'accountant'
+  | 'employee'
+  | 'manager'
+  | 'finance_manager'
+  | 'sales_rep';
 export type ExpenseStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 export type CustodyStatus = 'active' | 'closed' | 'frozen';
@@ -31,6 +38,8 @@ export interface Database {
       projects: GenericTable;
       cost_centers: GenericTable;
       custodies: GenericTable;
+      customers: GenericTable;
+      custody_transactions: GenericTable;
       expenses: GenericTable;
       approvals: GenericTable;
       notifications: GenericTable;
@@ -51,6 +60,33 @@ export interface Database {
           p_actor_id?: string | null;
         };
         Returns: boolean;
+      };
+      custody_current_balance: { Args: { p_custody_id: string }; Returns: number };
+      request_manual_topup: {
+        Args: { p_to_user_id: string; p_amount: number; p_notes?: string };
+        Returns: string;
+      };
+      decide_manual_topup: {
+        Args: { p_tx_id: string; p_approve: boolean; p_comment?: string };
+        Returns: boolean;
+      };
+      request_transfer: {
+        Args: { p_to_user_id: string; p_amount: number; p_notes?: string };
+        Returns: string;
+      };
+      decide_transfer: {
+        Args: { p_tx_id: string; p_approve: boolean; p_comment?: string };
+        Returns: boolean;
+      };
+      record_customer_payment: {
+        Args: {
+          p_amount: number;
+          p_customer_id?: string | null;
+          p_customer_name?: string | null;
+          p_attachment_path?: string | null;
+          p_notes?: string;
+        };
+        Returns: string;
       };
       handle_new_user_onboarding: { Args: Record<PropertyKey, never>; Returns: unknown };
     };
