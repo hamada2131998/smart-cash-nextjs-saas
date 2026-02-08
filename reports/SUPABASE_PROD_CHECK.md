@@ -48,3 +48,11 @@ NOT EXECUTED
 
 ## Conclusion
 Dashboard الوصول غير متاح من بيئة التنفيذ الحالية؛ لا يمكن تحديد حالة 011 من دون تشغيل الاستعلامات على SQL Editor.
+
+## MANUAL RUN INSTRUCTIONS
+1. Open **Supabase Dashboard** for the production project.
+2. Navigate to **SQL Editor**.
+3. Open and copy SQL from: `reports/PROD_SQL_CHECKS.sql`.
+4. Paste all queries into SQL Editor and run them.
+5. Copy raw results for sections A/B/C (and D optional).
+6. Paste results back here in chat to finalize production-state verification.
