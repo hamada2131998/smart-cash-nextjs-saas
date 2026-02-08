@@ -1,0 +1,314 @@
+{
+  "repo": {
+    "name": "smart-cash-custody-saas",
+    "structure": {
+      "app_routes": [
+        "/",
+        "/auth/login",
+        "/auth/register",
+        "/auth/callback",
+        "/dashboard",
+        "/dashboard/expenses",
+        "/dashboard/expenses/new",
+        "/dashboard/expenses/[id]",
+        "/dashboard/custodies",
+        "/dashboard/custodies/new",
+        "/dashboard/customers",
+        "/dashboard/notifications",
+        "/dashboard/users",
+        "/dashboard/users/new",
+        "/dashboard/policies",
+        "/dashboard/settings"
+      ],
+      "api_routes": [
+        "/api/users/invite"
+      ],
+      "key_paths": {
+        "components": [
+          "src/components/Sidebar.tsx",
+          "src/components/DashboardHeader.tsx"
+        ],
+        "lib": [
+          "src/lib/supabase.ts",
+          "src/lib/supabase-server.ts",
+          "src/lib/supabase-admin.ts",
+          "src/lib/auth-utils.ts"
+        ],
+        "migrations": [
+          "supabase/migrations/010_saas_production_patch.sql",
+          "supabase/migrations/011_custody_operating_system.sql",
+          "supabase/migrations/012_custody_notifications_automation.sql"
+        ]
+      }
+    },
+    "node": {
+      "engines": null,
+      "nvmrc": false,
+      "node_version_file": false
+    },
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build --webpack",
+      "start": "next start",
+      "lint": "next lint",
+      "type-check": "tsc --noEmit",
+      "supabase:generate-types": "supabase gen types typescript --project-id $NEXT_PUBLIC_SUPABASE_PROJECT_ID > types/database.types.ts"
+    }
+  },
+  "build": {
+    "npm_ci": {
+      "status": "pass",
+      "notes": [
+        "Installed successfully",
+        "Deprecation warnings for @supabase/auth-helpers-nextjs"
+      ]
+    },
+    "lint": {
+      "status": "fail",
+      "command": "npm run lint",
+      "error": "Invalid project directory provided, no such directory: .../lint"
+    },
+    "build": {
+      "status": "pass",
+      "command": "npm run build",
+      "warnings": [
+        "images.domains is deprecated; use images.remotePatterns",
+        "multiple lockfiles detected",
+        "middleware convention deprecated in favor of proxy"
+      ]
+    },
+    "test": {
+      "status": "fail",
+      "command": "npm test",
+      "error": "Missing script: test"
+    },
+    "logs": {
+      "build": "reports/build.log",
+      "lint": "reports/lint.log",
+      "test": "reports/test.log"
+    }
+  },
+  "vercel": {
+    "config_file": "vercel.json",
+    "framework": "nextjs",
+    "build_command": "npm run build",
+    "install_command": "npm install",
+    "region": [
+      "iad1"
+    ],
+    "app_router": true,
+    "edge_runtime_routes": [],
+    "server_actions": {
+      "enabled_in_next_config": true,
+      "explicit_use_server_found": false
+    },
+    "next_config_findings": {
+      "images_domains_used": true,
+      "images_remote_patterns_used": false
+    }
+  },
+  "supabase": {
+    "auth": {
+      "callback_route": "src/app/auth/callback/page.tsx",
+      "exchange_code_for_session": true,
+      "pkce_style_flow": true,
+      "ssr_cookie_session": true,
+      "login_register_client_side": true
+    },
+    "tenant_binding": {
+      "company_resolution": "SQL function auth_company_id() via profiles.id = auth.uid()",
+      "role_resolution": "SQL function auth_user_role() via user_roles",
+      "code_access_patterns": [
+        "select company_id from profiles",
+        "select role from user_roles"
+      ]
+    },
+    "admin_api": {
+      "files": [
+        "src/lib/supabase-admin.ts",
+        "src/app/api/users/invite/route.ts"
+      ],
+      "server_only_guard": true,
+      "service_role_client_exposure_detected": false
+    },
+    "env_usage": {
+      "public": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "NEXT_PUBLIC_APP_URL"
+      ],
+      "server_only": [
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    }
+  },
+  "db": {
+    "core_tables": [
+      "companies",
+      "profiles",
+      "user_roles",
+      "expenses",
+      "approvals",
+      "notifications",
+      "audit_logs"
+    ],
+    "ledger_tables": [
+      "customers",
+      "custody_transactions"
+    ],
+    "ledger_balance": {
+      "function": "custody_current_balance(p_custody_id uuid)",
+      "approved_definition": "sum only rows where custody_transactions.status = 'approved'",
+      "tx_types": [
+        "topup",
+        "transfer",
+        "expense_deduction"
+      ],
+      "sources": [
+        "manual_admin",
+        "customer_payment",
+        "transfer",
+        "expense"
+      ]
+    },
+    "migrations": {
+      "m010": {
+        "exists": true,
+        "contains": [
+          "base schema",
+          "auth_company_id",
+          "auth_user_role",
+          "handle_new_user_onboarding",
+          "RLS baseline",
+          "storage bucket expense_attachments"
+        ]
+      },
+      "m011": {
+        "exists": true,
+        "contains": [
+          "customers table",
+          "custody_transactions table",
+          "ledger functions",
+          "RLS for customers and custody_transactions",
+          "decide_approval override to ledger deduction"
+        ],
+        "prerequisites": [
+          "Apply migration 010 first",
+          "pgcrypto extension available (gen_random_uuid)",
+          "Apply 011 before 012"
+        ]
+      },
+      "m012": {
+        "exists": true,
+        "contains": [
+          "notify_custody_tx_events trigger function",
+          "insert/update triggers on custody_transactions"
+        ]
+      }
+    }
+  },
+  "flows": {
+    "invite": {
+      "entry": "POST /api/users/invite",
+      "checks": [
+        "session required",
+        "role in owner/admin/manager",
+        "company membership upsert"
+      ],
+      "admin_usage": "supabase admin inviteUserByEmail + listUsers fallback"
+    },
+    "custody": {
+      "page": "src/app/dashboard/custodies/page.tsx",
+      "rpcs": [
+        "request_manual_topup",
+        "decide_manual_topup",
+        "request_transfer",
+        "decide_transfer",
+        "custody_current_balance"
+      ]
+    },
+    "expenses": {
+      "create_page": "src/app/dashboard/expenses/new/page.tsx",
+      "approval_function": "decide_approval",
+      "deduction_mode": "ledger expense_deduction via migration 011 function override"
+    },
+    "notifications": {
+      "table_schema": [
+        "id",
+        "user_id",
+        "company_id",
+        "type",
+        "title",
+        "message",
+        "link",
+        "is_read",
+        "metadata",
+        "created_at"
+      ],
+      "header_fetch": "latest notifications + pending custody inbox count",
+      "mark_all_read": "client-side direct table update",
+      "realtime": false,
+      "polling": true,
+      "trigger_automation": true
+    },
+    "attachments": {
+      "upload_sites": [
+        "src/app/dashboard/expenses/new/page.tsx",
+        "src/app/dashboard/customers/page.tsx"
+      ],
+      "bucket": "expense_attachments",
+      "stored_columns": [
+        "expenses.attachment_url",
+        "custody_transactions.attachment_path"
+      ]
+    }
+  },
+  "risks": {
+    "notifications": [
+      "If migration 012 not applied, notifications can be incomplete",
+      "If trigger and UI generation coexist in drifted environments, duplicates are possible",
+      "Polling + multi-query counters may become expensive at scale"
+    ],
+    "functions_and_security": [
+      "SECURITY DEFINER functions require strict caller identity assumptions",
+      "decide_approval actor parameter trust boundary should be validated"
+    ],
+    "state_consistency": [
+      "custodies.current_balance still exists while ledger is authoritative",
+      "function overrides across migrations require strict order control"
+    ],
+    "safety_matrix": [
+      {
+        "feature": "SQL triggers",
+        "risk": "medium",
+        "avoid_break": "additive, idempotent migration + staging verification",
+        "rollback": "drop trigger/function migration"
+      },
+      {
+        "feature": "Storage",
+        "risk": "medium",
+        "avoid_break": "add new bucket/policies without replacing old path immediately",
+        "rollback": "revert policies and route traffic back"
+      },
+      {
+        "feature": "Policies (RLS)",
+        "risk": "high",
+        "avoid_break": "incremental rollout with role/company test matrix",
+        "rollback": "restore previous policy SQL"
+      },
+      {
+        "feature": "Audit logs",
+        "risk": "low-medium",
+        "avoid_break": "insert-only additive triggers",
+        "rollback": "drop new audit triggers"
+      }
+    ]
+  },
+  "open_questions": [
+    "Are migrations 011 and 012 applied in production in exact order?",
+    "Should notification generation be DB-trigger only (single source of truth)?",
+    "Do we need a strict identity check for actor fields passed into SECURITY DEFINER functions?",
+    "Should custodies.current_balance be treated as legacy/non-authoritative and eventually removed from reads?",
+    "Do we want a dedicated mark-all-read API endpoint instead of client direct updates?"
+  ]
+}
