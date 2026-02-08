@@ -8,6 +8,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint",
+    "test": "echo \"No tests configured\" && exit 0",
     "type-check": "tsc --noEmit",
     "supabase:generate-types": "supabase gen types typescript --project-id $NEXT_PUBLIC_SUPABASE_PROJECT_ID > types/database.types.ts"
   },
