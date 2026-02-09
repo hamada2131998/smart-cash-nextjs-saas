@@ -10,6 +10,8 @@ const inviteSchema = z.object({
 });
 
 const ALLOWED_INVITER_ROLES = new Set<UserRole>(['owner', 'admin', 'manager']);
+const OTHER_COMPANY_ERROR =
+  'هذا البريد مسجّل بالفعل داخل شركة أخرى. استخدم بريدًا جديدًا أو تواصل مع الدعم لنقل الحساب.';
 
 function emailPrefix(email: string) {
   return email.split('@')[0] || 'User';
@@ -100,15 +102,37 @@ export async function POST(request: Request) {
 
     if (existingByEmail?.id) {
       if (existingByEmail.company_id !== companyId) {
-        return NextResponse.json(
-          { ok: false, error: 'User already belongs to another company' },
-          { status: 409 }
-        );
+        return NextResponse.json({ ok: false, error: OTHER_COMPANY_ERROR }, { status: 409 });
       }
 
       await ensureMembership(existingByEmail.id as string, email, payload.role as UserRole, companyId, currentUser.id);
 
       return NextResponse.json({ ok: false, error: 'Already invited/exists' }, { status: 409 });
+    }
+
+    const { data: usersData, error: usersError } = await admin.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    });
+
+    if (usersError) {
+      return NextResponse.json({ ok: false, error: usersError.message }, { status: 400 });
+    }
+
+    const existingAuthUser = usersData.users.find((user) => user.email?.toLowerCase() === email);
+    if (existingAuthUser?.id) {
+      const { data: existingProfile } = await admin
+        .from('profiles')
+        .select('company_id')
+        .eq('id', existingAuthUser.id)
+        .maybeSingle();
+
+      if (existingProfile?.company_id && existingProfile.company_id !== companyId) {
+        return NextResponse.json({ ok: false, error: OTHER_COMPANY_ERROR }, { status: 409 });
+      }
+
+      await ensureMembership(existingAuthUser.id, email, payload.role as UserRole, companyId, currentUser.id);
+      return NextResponse.json({ ok: true, invited_user_id: existingAuthUser.id });
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -132,15 +156,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ ok: false, error: inviteError.message }, { status: 400 });
       }
 
-      const { data: usersData, error: usersError } = await admin.auth.admin.listUsers({
-        page: 1,
-        perPage: 1000,
-      });
-
-      if (usersError) {
-        return NextResponse.json({ ok: false, error: usersError.message }, { status: 400 });
-      }
-
       invitedUserId =
         usersData.users.find((user) => user.email?.toLowerCase() === email)?.id ?? null;
 
@@ -160,10 +175,7 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (existingById?.company_id && existingById.company_id !== companyId) {
-      return NextResponse.json(
-        { ok: false, error: 'User already belongs to another company' },
-        { status: 409 }
-      );
+      return NextResponse.json({ ok: false, error: OTHER_COMPANY_ERROR }, { status: 409 });
     }
 
     await ensureMembership(invitedUserId, email, payload.role as UserRole, companyId, currentUser.id);

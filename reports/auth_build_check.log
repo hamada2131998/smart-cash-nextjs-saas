@@ -1,0 +1,58 @@
+
+> smart-cash-custody-saas@1.0.0 build
+> next build --webpack
+
+⚠ `images.domains` is deprecated in favor of `images.remotePatterns`. Please update next.config.js to protect your application from malicious users.
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\home\package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * C:\Users\home\Desktop\قيود حمادة\HAMADA SYSTEM\package-lock.json
+
+▲ Next.js 16.1.6 (webpack)
+- Environments: .env.local
+- Experiments (use with caution):
+  · serverActions
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 9.6s
+  Running TypeScript ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/20) ...
+  Generating static pages using 3 workers (5/20) 
+  Generating static pages using 3 workers (10/20) 
+  Generating static pages using 3 workers (15/20) 
+✓ Generating static pages using 3 workers (20/20) in 2.5s
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/users/invite
+├ ƒ /auth/callback
+├ ○ /auth/forgot-password
+├ ○ /auth/login
+├ ○ /auth/register
+├ ○ /auth/reset-password
+├ ƒ /dashboard
+├ ƒ /dashboard/custodies
+├ ƒ /dashboard/custodies/new
+├ ƒ /dashboard/customers
+├ ƒ /dashboard/expenses
+├ ƒ /dashboard/expenses/[id]
+├ ƒ /dashboard/expenses/new
+├ ƒ /dashboard/notifications
+├ ƒ /dashboard/policies
+├ ƒ /dashboard/settings
+├ ƒ /dashboard/users
+└ ƒ /dashboard/users/new
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
