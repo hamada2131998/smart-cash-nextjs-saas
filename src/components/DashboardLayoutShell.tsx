@@ -28,6 +28,7 @@ export default function DashboardLayoutShell({
     const titles: Record<string, string> = {
       '/dashboard': 'Dashboard',
       '/dashboard/home': 'الرئيسية',
+      '/dashboard/all': 'كل الأقسام',
       '/dashboard/advanced': 'لوحة التحكم المتقدمة',
       '/dashboard/expenses': 'إدارة المصروفات',
       '/dashboard/custodies': 'إدارة العهد',

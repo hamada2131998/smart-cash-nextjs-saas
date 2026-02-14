@@ -17,14 +17,14 @@
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 8.9s
+✓ Compiled successfully in 9.8s
   Running TypeScript ...
   Collecting page data using 3 workers ...
-  Generating static pages using 3 workers (0/23) ...
-  Generating static pages using 3 workers (5/23) 
-  Generating static pages using 3 workers (11/23) 
-  Generating static pages using 3 workers (17/23) 
-✓ Generating static pages using 3 workers (23/23) in 1260.2ms
+  Generating static pages using 3 workers (0/25) ...
+  Generating static pages using 3 workers (6/25) 
+  Generating static pages using 3 workers (12/25) 
+  Generating static pages using 3 workers (18/25) 
+✓ Generating static pages using 3 workers (25/25) in 1190.3ms
   Finalizing page optimization ...
   Collecting build traces ...
 
@@ -39,6 +39,7 @@ Route (app)
 ├ ○ /auth/reset-password
 ├ ƒ /dashboard
 ├ ƒ /dashboard/advanced
+├ ƒ /dashboard/all
 ├ ƒ /dashboard/custodies
 ├ ƒ /dashboard/custodies/new
 ├ ƒ /dashboard/customers
@@ -51,7 +52,8 @@ Route (app)
 ├ ƒ /dashboard/policies
 ├ ƒ /dashboard/settings
 ├ ƒ /dashboard/users
-└ ƒ /dashboard/users/new
+├ ƒ /dashboard/users/new
+└ ○ /why
 
 
 ƒ Proxy (Middleware)
