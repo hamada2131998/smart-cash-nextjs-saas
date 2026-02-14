@@ -57,7 +57,6 @@ BEGIN
   INSERT INTO companies (name, activity_type_id, created_by)
   VALUES (v_company_name, v_activity_id, NEW.id)
   RETURNING id INTO v_company_id;
-
   PERFORM public.seed_default_policies(v_company_id);
 
   INSERT INTO profiles (id, email, full_name, company_id)
