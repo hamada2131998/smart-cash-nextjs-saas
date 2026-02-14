@@ -174,7 +174,7 @@ export default function UsersPage() {
         </div>
         <button type="button" onClick={() => setShowInviteModal(true)} className="btn btn-primary">
           <Plus className="w-5 h-5" />
-          إضافة مستخدم جديد
+          دعوة موظف جديد
         </button>
       </div>
 
