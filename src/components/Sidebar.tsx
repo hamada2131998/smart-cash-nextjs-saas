@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/dashboard/advanced', icon: LayoutDashboard },
   { name: 'المصروفات', href: '/dashboard/expenses', icon: FileText },
   { name: 'العهد', href: '/dashboard/custodies', icon: DollarSign },
   { name: 'السياسات', href: '/dashboard/policies', icon: Shield },
