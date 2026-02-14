@@ -11,6 +11,7 @@ export default async function DashboardLayout({
   const { data: { user } } = await supabase.auth.getUser();
 
   let profile = null;
+  let role: string | null = null;
   if (user) {
     const { data } = await supabase
       .from('profiles')
@@ -18,6 +19,23 @@ export default async function DashboardLayout({
       .eq('id', user.id)
       .single();
     profile = data;
+
+    if (data?.company_id) {
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('company_id', data.company_id)
+        .single();
+
+      role = roleData?.role ?? null;
+    }
+  }
+
+  const isEmployeeLite = role === 'employee' || role === 'sales_rep';
+
+  if (isEmployeeLite) {
+    return <div className="min-h-screen bg-gray-50">{children}</div>;
   }
 
   const getTitle = (pathname: string): string => {
@@ -27,8 +45,9 @@ export default async function DashboardLayout({
       '/dashboard/custodies': 'إدارة العهد',
       '/dashboard/policies': 'السياسات',
       '/dashboard/users': 'المستخدمون',
-      '/dashboard/settings': 'الإعدادات',
-    };
+        '/dashboard/settings': 'الإعدادات',
+        '/dashboard/employee': 'لوحة الموظف',
+      };
     return titles[pathname] || 'Dashboard';
   };
 
