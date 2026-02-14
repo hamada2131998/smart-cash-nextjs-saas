@@ -5,8 +5,10 @@ import { createClient } from '@/lib/supabase';
 import { DollarSign, FileText, Clock, TrendingUp, TrendingDown, Users, AlertCircle } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/format-utils';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [stats, setStats] = useState({
     totalCustodyBalance: 0,
     activeCustodies: 0,
@@ -26,6 +28,31 @@ export default function DashboardPage() {
   const loadData = async () => {
     setLoading(true);
     try {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('company_id')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.company_id) {
+          const { data: roleRow } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .eq('company_id', profile.company_id)
+            .single();
+
+          if (roleRow?.role === 'employee' || roleRow?.role === 'sales_rep') {
+            router.replace('/dashboard/employee');
+            return;
+          }
+        }
+      }
+
       // Load expenses
       const { data: expenses } = await supabase
         .from('expenses')
@@ -106,7 +133,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [router]);
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
