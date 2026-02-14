@@ -56,3 +56,10 @@ Dashboard الوصول غير متاح من بيئة التنفيذ الحالي
 4. Paste all queries into SQL Editor and run them.
 5. Copy raw results for sections A/B/C (and D optional).
 6. Paste results back here in chat to finalize production-state verification.
+
+## Migration 011 Execution Result
+- Migration 011 APPLIED SUCCESSFULLY
+- Execution date: 2026-02-09
+- Confirmed existing objects:
+  - `public.custody_transactions`
+  - `public.custody_current_balance`
