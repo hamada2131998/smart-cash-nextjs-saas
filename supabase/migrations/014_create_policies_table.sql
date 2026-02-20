@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE policies (
+CREATE TABLE IF NOT EXISTS policies (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   name VARCHAR(200) NOT NULL,
@@ -16,12 +16,15 @@ CREATE TABLE policies (
 
 ALTER TABLE policies ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view policies" ON policies;
 CREATE POLICY "Users can view policies" ON policies FOR SELECT USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND profiles.company_id = policies.company_id)
+  company_id = auth_company_id()
 );
 
+DROP POLICY IF EXISTS "Admins can manage policies" ON policies;
 CREATE POLICY "Admins can manage policies" ON policies FOR ALL USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('owner', 'admin'))
+  company_id = auth_company_id() AND (is_owner() OR auth_user_role() = 'admin')
 );
 
+DROP TRIGGER IF EXISTS update_policies_updated_at ON policies;
 CREATE TRIGGER update_policies_updated_at BEFORE UPDATE ON policies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
