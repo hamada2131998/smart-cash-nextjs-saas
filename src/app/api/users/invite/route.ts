@@ -26,12 +26,18 @@ async function ensureMembership(
 ) {
   const admin = createAdminClient();
 
+  const { data: existingProfile } = await admin
+    .from('profiles')
+    .select('full_name')
+    .eq('id', invitedUserId)
+    .maybeSingle();
+
   const { error: profileError } = await admin.from('profiles').upsert(
     {
       id: invitedUserId,
       email: invitedEmail,
       company_id: companyId,
-      full_name: emailPrefix(invitedEmail),
+      full_name: existingProfile?.full_name || emailPrefix(invitedEmail),
     },
     { onConflict: 'id' }
   );
@@ -142,6 +148,7 @@ export async function POST(request: Request) {
       data: {
         company_id: companyId,
         invited_role: payload.role,
+        is_company_invite: true,
       },
       redirectTo,
     });
