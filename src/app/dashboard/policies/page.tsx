@@ -141,26 +141,26 @@ export default function PoliciesPage() {
                       <p className="text-sm text-gray-500 mt-1">{policy.description}</p>
                     )}
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {policy.rules && typeof policy.rules === 'object' && (
+                      {policy.policy_rules && typeof policy.policy_rules === 'object' && (
                         <>
-                          {policy.rules.autoApproveAmount && (
+                          {policy.policy_rules.autoApproveAmount && (
                             <span className="text-xs text-gray-600">
-                              ✓ موافقة تلقائية لأقل من {policy.rules.autoApproveAmount} ر.س
+                              ✓ موافقة تلقائية لأقل من {policy.policy_rules.autoApproveAmount} ر.س
                             </span>
                           )}
-                          {policy.rules.requireAttachmentAbove && (
+                          {policy.policy_rules.requireAttachmentAbove && (
                             <span className="text-xs text-gray-600">
-                              📎 مرفقات إجبارية لأكثر من {policy.rules.requireAttachmentAbove} ر.س
+                              📎 مرفقات إجبارية لأكثر من {policy.policy_rules.requireAttachmentAbove} ر.س
                             </span>
                           )}
-                          {policy.rules.requireApproval && (
+                          {policy.policy_rules.requireApproval && (
                             <span className="text-xs text-gray-600">
                               👤 يتطلب موافقة
                             </span>
                           )}
-                          {policy.rules.maxAmountWithoutApproval && (
+                          {policy.policy_rules.maxAmountWithoutApproval && (
                             <span className="text-xs text-gray-600">
-                              ⚠️ الحد الأقصى بدون موافقة: {policy.rules.maxAmountWithoutApproval}
+                              ⚠️ الحد الأقصى بدون موافقة: {policy.policy_rules.maxAmountWithoutApproval}
                             </span>
                           )}
                         </>
